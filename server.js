@@ -29,19 +29,39 @@ async function start() {
     // res.send('Goodbye World');
   });
 
-  app.get('/allusers', async (req, res) => {
+  app.get('/getallusers', async (req, res) => {
     try {
       const result = await pool.query('SELECT * FROM users;')
       res.status(200).json(result.rows);
-      console.log('Query result rows:', result.rows); // Debug output
-
-      // return res;
+      console.log('Quering all users');
     }
     catch (error) {
       res.status(500).json({error: 'Database query failure'})
     }
   });
-  
+
+  app.get('/getallgroups', async (req, res) => {
+    try {
+      const result = await pool.query('SELECT * FROM groups;')
+      res.status(200).json(result.rows);
+      console.log('Quering all groups');
+    }
+    catch (error) {
+      res.status(500).json({error: 'Database query failure'})
+    }
+  });
+
+  app.get('/getallsales', async (req, res) => {
+    try {
+      const result = await pool.query('SELECT * FROM sales;')
+      res.status(200).json(result.rows);
+      console.log('Quering all sales');
+    }
+    catch (error) {
+      res.status(500).json({error: 'Database query failure'})
+    }
+  });
+
   // Write your endpoints here
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 

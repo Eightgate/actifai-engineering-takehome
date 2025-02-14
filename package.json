@@ -5,10 +5,15 @@
   "author": "Actifai Engineering",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "nodemon server.js"
   },
   "dependencies": {
     "express": "4.16.1",
-    "pg": "8.7.1"
+    "pg": "8.7.1",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "3.1.9"
   }
 }

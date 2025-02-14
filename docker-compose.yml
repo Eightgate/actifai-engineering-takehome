@@ -22,3 +22,4 @@ services:
       - '3000:3000'
     volumes:
       - ./:/usr/src/app
+    command: npx nodemon server.js

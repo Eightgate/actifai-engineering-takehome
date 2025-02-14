@@ -1,7 +1,16 @@
 'use strict';
 
 const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const { Pool } = require('pg');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgres://user:pass@db:5432/actifai'
+});
 const seeder = require('./seed');
+const swaggerDocument = YAML.load('./openapi.yaml');
+
+
 
 // Constants
 const PORT = 3000;
@@ -13,13 +22,28 @@ async function start() {
 
   // App
   const app = express();
-
+  
   // Health check
   app.get('/health', (req, res) => {
-    res.send('Hello World');
+    res.send('Hello World!');
+    // res.send('Goodbye World');
   });
 
+  app.get('/allusers', async (req, res) => {
+    try {
+      const result = await pool.query('SELECT * FROM users;')
+      res.status(200).json(result.rows);
+      console.log('Query result rows:', result.rows); // Debug output
+
+      // return res;
+    }
+    catch (error) {
+      res.status(500).json({error: 'Database query failure'})
+    }
+  });
+  
   // Write your endpoints here
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
   app.listen(PORT, HOST);
   console.log(`Server is running on http://${HOST}:${PORT}`);

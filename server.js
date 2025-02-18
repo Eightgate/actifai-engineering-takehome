@@ -1,35 +1,3 @@
-'use strict';
-
-const express = require('express');
-const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
-const { Pool } = require('pg');
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgres://user:pass@db:5432/actifai'
-});
-const seeder = require('./seed');
-const swaggerDocument = YAML.load('./openapi.yaml');
-
-
-
-// Constants
-const PORT = 3000;
-const HOST = '0.0.0.0';
-
-async function start() {
-  // Seed the database
-  await seeder.seedDatabase();
-
-  // App
-  const app = express();
-  
-  // Health check
-  app.get('/health', (req, res) => {
-    res.send('Hello World!');
-    // res.send('Goodbye World');
-  });
-
-
   //  I'm going to leave all the end points here as that is what
   //  the instructions seemed to explicitly state, but please know 
   //  that I would normally organize them into different files and 
@@ -48,6 +16,35 @@ async function start() {
   // and it also supports an object-oriented approach.
 
 
+'use strict';
+
+const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const { Pool } = require('pg');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgres://user:pass@db:5432/actifai'
+});
+const seeder = require('./seed');
+const swaggerDocument = YAML.load('./openapi.yaml');
+
+// Constants
+const PORT = 3000;
+const HOST = '0.0.0.0';
+
+async function start() {
+  // Seed the database
+  await seeder.seedDatabase();
+
+  // App
+  const app = express();
+  
+  // Health check
+  app.get('/health', (req, res) => {
+    res.send('Hello World!');
+    // res.send('Goodbye World');
+  });
+
   /*
     User based end points
      - Get all users
@@ -58,7 +55,7 @@ async function start() {
   */
 
      //return all users
-     app.get('/getallusers', async (req, res) => {
+     app.get('/allUserInfo', async (req, res) => {
       try {
         const result = await pool.query('SELECT * FROM users;')
         res.status(200).json(result.rows);
@@ -70,17 +67,84 @@ async function start() {
     });
 
     // return a user
-    app.get('/getuser/:id', async (req, res) => {
+    app.get('/userInfo/:id', async (req, res) => {
       try {
         const userId = req.query.user_id;
         const result = await pool.query('SELECT * FROM users WHERE id = $1;', [userId])
         res.status(200).json(result.rows);
-        console.log(`request info for user ${userId}`);
+        console.log(`request info for user with id ` + userId);
       }
       catch (error) {
         res.status(500).json({error: 'Database error while looking for user ${userId}'})
       }
     });
+
+    // return users average revenue (default is all time, optional date range parameters)
+    app.get('/averageRevenue/:id', async (req, res) => {
+      try {
+        const userId = parseInt(req.params.id, 10);
+        const { start, end } = req.query;
+
+        let query;
+        let values = [];
+        if (!start || !end) {
+          query = `
+            SELECT user_id, AVG(amount) AS averageRevenue
+            FROM sales
+            WHERE user_id = $1
+            GROUP BY user_id;
+          `;
+          values = [userId];
+        }
+        else {
+          query = `
+          SELECT user_id, AVG(amount) AS averageRevenue
+          FROM sales
+          WHERE user_id = $1 AND date BETWEEN $2 AND $3
+          GROUP BY user_id
+          ;
+        `;
+          values = [userId, start, end]; 
+        }       
+        const result = await pool.query(query, values);
+        res.status(200).json(result.rows);
+        console.log(`Querying average revenue for user ${userId}`);
+      } catch (error) {
+          console.error('Error getting user average revenue:', error);
+          res.status(500).json({ error: 'Database query failure' });
+      }
+    });
+
+    // // return users average by date
+    // app.get('/averageTotal/:id', async (req, res) => {
+    //   try {
+    //     // Get the optional user_id from the query string
+    //     const userId = req.query.user_id;
+    //     let query;
+    //     let values = [];
+      
+    //     query = `
+    //       SELECT DATE_TRUNC('day', date) AS date,
+    //             SUM(amount) AS totalSales,
+    //             AVG(amount) AS averageSale
+    //       FROM sales
+    //       WHERE user_id = $1
+    //       GROUP BY date
+    //       ORDER BY date;
+    //     `;
+    //     values = [userId];
+      
+    //     const result = await pool.query(query, values);
+    //     res.status(200).json(result.rows);
+    //     console.log('Quering all sales');
+    //   } catch (error) {
+    //     console.error('Error getting user revenue:', error);
+    //     res.status(500).json({ error: 'Database query failure' });
+    //   }
+    // });
+
+
+
 
   /*
     Group based end points

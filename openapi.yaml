@@ -1,42 +1,61 @@
 openapi: 3.0.0
 info:
-  title: My API
-  version: "1.0"
+  title: Actifai Engineering Takehome API
+  version: "1.0.0"
+  description: >
+    This API provides endpoints for health checks, user and group management,
+    and sales analytics. In a production environment, endpoints would be organized
+    into separate files, with additional model definitions and tests.
+servers:
+  - url: http://localhost:3000
 paths:
   /health:
     get:
       summary: Health check
       responses:
-        "200":
-          description: Successful response
+        '200':
+          description: OK
           content:
-            application/json:
+            text/plain:
               schema:
                 type: string
-                example: "Hello World"
-  /getallusers:
+                example: "Hello World!"
+
+  /allUserInfo:
     get:
-      summary: Return all users in the database
+      summary: Retrieve all users
       responses:
-        "200":
-          description: Successful response
+        '200':
+          description: List of user objects
           content:
             application/json:
               schema:
-                type: 
-                example: 
-  /getuser/{id}:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: "Alice"
+                    email:
+                      type: string
+                      example: "alice@example.com"
+
+  /userInfo/{id}:
     get:
-      summary: Return a user with specified id
+      summary: Retrieve a user by ID
       parameters:
-        - in: query
-          name: user_id
+        - in: path
+          name: id
+          required: true
           schema:
             type: integer
-          required: true
-          description: The ID of the user to retrieve.
+          description: The ID of the user.
       responses:
-        "200":
+        '200':
           description: A user object
           content:
             application/json:
@@ -45,56 +64,184 @@ paths:
                 properties:
                   id:
                     type: integer
-                    example: 11
+                    example: 1
                   name:
                     type: string
                     example: "Alice"
                   email:
                     type: string
                     example: "alice@example.com"
-        "404":
+        '404':
           description: User not found
+
+  /averageRevenue/{id}:
+    get:
+      summary: Get a user's average revenue for a specified date range or all time
+      description: >
+        Returns average revenue data for the specified user. If the query parameters
+        `start` and `end` (in YYYY-MM-DD format) are provided, the results are filtered
+        by that date range; otherwise, all time data is returned.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the user.
+        - in: query
+          name: start
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Start date in YYYY-MM-DD format.
+        - in: query
+          name: end
+          required: false
+          schema:
+            type: string
+            format: date
+          description: End date in YYYY-MM-DD format.
+      responses:
+        '200':
+          description: A list of average revenue data points by day
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                      example: "2021-08-06"
+                    averageRevenue:
+                      type: number
+                      format: float
+                      example: 1500.25
+        '404':
+          description: Data not found
+
+  /averageTotal/{id}:
+    get:
+      summary: Get a user's total and average sales by date
+      description: >
+        Returns time series data of sales for the specified user, aggregated by day.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the user.
+      responses:
+        '200':
+          description: Time series sales data for a user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                      example: "2021-08-06"
+                    totalSales:
+                      type: number
+                      format: float
+                      example: 3341
+                    averageSale:
+                      type: number
+                      format: float
+                      example: 3341
+        '404':
+          description: Data not found
+
   /getallgroups:
     get:
-      summary: Return all groups in the database
+      summary: Retrieve all groups
       responses:
-        "200":
-          description: Successful response
+        '200':
+          description: List of group objects
           content:
             application/json:
               schema:
-                type: 
-                example: 
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: "Sales Team"
+
   /getallsales:
     get:
-      summary: Return all sales in the database
+      summary: Retrieve all sales records
       responses:
-        "200":
-          description: Successful response
+        '200':
+          description: List of sales records
           content:
             application/json:
               schema:
-                type: 
-                example: 
-  /getAverageSales:
-    get:
-      summary: Return all users sales averages
-      responses:
-        "200":
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: 
-                example: 
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 19
+                    user_id:
+                      type: integer
+                      example: 20
+                    amount:
+                      type: number
+                      format: float
+                      example: 3341
+                    date:
+                      type: string
+                      format: date
+                      example: "2021-08-06"
+
   /timeseries:
     get:
-      summary: 
+      summary: Retrieve aggregated sales time series data
+      description: >
+        Returns sales data aggregated by day. Optionally, a query parameter `user_id`
+        can filter data for a specific user.
+      parameters:
+        - in: query
+          name: user_id
+          required: false
+          schema:
+            type: integer
+          description: Optional user ID to filter the data.
       responses:
-        "200":
-          description: Successful response
+        '200':
+          description: Aggregated time series sales data
           content:
             application/json:
               schema:
-                type: 
-                example: 
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                      example: "2021-08-06"
+                    totalSales:
+                      type: number
+                      format: float
+                      example: 3341
+                    averageSale:
+                      type: number
+                      format: float
+                      example: 3341
+        '404':
+          description: Data not found

@@ -40,9 +40,9 @@ async function start() {
   const app = express();
   
   // Health check
+  // Responds with a plain text message to confirm the server is running.
   app.get('/health', (req, res) => {
     res.send('Hello World!');
-    // res.send('Goodbye World');
   });
 
     // Write your endpoints here
@@ -60,7 +60,7 @@ async function start() {
      )
   */
 
-     //return all users
+     // Retrieves all user records from the database and returns them as JSON
      app.get('/allUserInfo', async (req, res) => {
       try {
         const result = await pool.query('SELECT * FROM users;')
@@ -72,7 +72,7 @@ async function start() {
       }
     });
 
-    // return a user
+    // Retrieves the details of a single user by ID (from the URL parameter) and returns the user data as JSON
     app.get('/userInfo/:id', async (req, res) => {
       try {
         const userId = parseInt(req.params.id, 10);
@@ -85,7 +85,8 @@ async function start() {
       }
     });
 
-    // return users average revenue (default is all time, optional date range parameters)
+    // Calculates and returns the overall average revenue for the specified user.
+    // If start and end query parameters are provided, the average is calculated for that date range.
     app.get('/averageUserRevenue/:id', async (req, res) => {
       try {
         const userId = parseInt(req.params.id, 10);
@@ -124,7 +125,8 @@ async function start() {
       }
     });
 
-    // return average sales daily time series for a user 
+    // Retrieves a daily time series of the user's average sales
+    // If start and end query parameters are provided, the average is calculated for that date range
     app.get('/averageDailyRevenue/:id', async (req, res) => {
       try {
         // Get the optional user_id from the query string
@@ -225,7 +227,7 @@ async function start() {
      )
   */
 
-  // Get all groups
+  // Retrieves all group records from the database and returns them as JSON
   app.get('/getallgroups', async (req, res) => {
     try {
       const result = await pool.query('SELECT * FROM groups;')
@@ -237,7 +239,7 @@ async function start() {
     }
   });
 
-  // return a specific group
+  // Retrieves the details of a specific group by ID and returns the group data as JSON
   app.get('/groupInfo/:id', async (req, res) => {
     try {
       const groupId = parseInt(req.params.id, 10);
@@ -250,7 +252,8 @@ async function start() {
     }
   });
 
-  // return group average revenue (default is all time, optional date range parameters)
+  // Calculates and returns the overall average revenue for the specified group
+// If start and end dates are provided as query parameters, the average is calculated for that range
   app.get('/averageGroupRevenue/:id', async (req, res) => {
     try {
       const userId = parseInt(req.params.id, 10);
@@ -291,7 +294,8 @@ async function start() {
     }
   });
 
-  // return average sales daily time series for a user 
+  // Retrieves a daily time series of the group's average revenue,
+  // optionally filtered by a provided date range
   app.get('/averageDailyGroupRevenue/:id', async (req, res) => {
     try {
       // Get the optional user_id from the query string
@@ -338,7 +342,8 @@ async function start() {
     }
   });
 
-  // return average sales monthly time series for a user 
+  // Retrieves a monthly time series of the group's average revenue,
+  // optionally filtered by a provided date range 
   app.get('/averageMonthlyGroupRevenue/:id', async (req, res) => {
     try {
       // Get the optional user_id from the query string
@@ -396,6 +401,7 @@ async function start() {
   });    
 
   // Webinterface setup
+  // Swagger site:  http://localhost:3000/docs/
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
   app.listen(PORT, HOST);
   console.log(`Server is running on http://${HOST}:${PORT}`);

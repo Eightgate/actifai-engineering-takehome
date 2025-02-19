@@ -45,12 +45,18 @@ async function start() {
     // res.send('Goodbye World');
   });
 
+    // Write your endpoints here
+
   /*
     User based end points
-     - Get all users
-     - get a row\profile for a single user by id
-     - get the average revenue for a user by date (defaults to all time)
-     - get the total revenue for a user by date (defaults to all time
+     -> Get all users
+     -> get a row\profile for a single user by id
+     -> get the average revenue for a user by date (defaults to all time)
+     -> get the average revenue for a user by date daily (defaults to all time)
+     -> get the average revenue for a user by date monthly (defaults to all time)
+     - Add user
+     - remove user
+     - modify user
      )
   */
 
@@ -87,15 +93,18 @@ async function start() {
 
         let query;
         let values = [];
-        if (!start || !end) {
+        //if non start or end date is provided, default to unbound (all time)
+        if (!start || !end) {  
           query = `
             SELECT user_id, AVG(amount) AS averageRevenue
             FROM sales
             WHERE user_id = $1
-            GROUP BY user_id;
+            GROUP BY user_id
+            ;
           `;
           values = [userId];
         }
+        // else use the times given to produce an average within the stated bounds
         else {
           query = `
           SELECT user_id, AVG(amount) AS averageRevenue
@@ -115,34 +124,95 @@ async function start() {
       }
     });
 
-    // // return users average by date
-    // app.get('/averageTotal/:id', async (req, res) => {
-    //   try {
-    //     // Get the optional user_id from the query string
-    //     const userId = req.query.user_id;
-    //     let query;
-    //     let values = [];
-      
-    //     query = `
-    //       SELECT DATE_TRUNC('day', date) AS date,
-    //             SUM(amount) AS totalSales,
-    //             AVG(amount) AS averageSale
-    //       FROM sales
-    //       WHERE user_id = $1
-    //       GROUP BY date
-    //       ORDER BY date;
-    //     `;
-    //     values = [userId];
-      
-    //     const result = await pool.query(query, values);
-    //     res.status(200).json(result.rows);
-    //     console.log('Quering all sales');
-    //   } catch (error) {
-    //     console.error('Error getting user revenue:', error);
-    //     res.status(500).json({ error: 'Database query failure' });
-    //   }
-    // });
+    // return average sales daily time series for a user 
+    app.get('/averageDailyRevenue/:id', async (req, res) => {
+      try {
+        // Get the optional user_id from the query string
+        const userId = parseInt(req.params.id, 10);
+        const { start, end } = req.query;
+        let query;
+        let values = [];
 
+        // return users average daily revenue time series (default is all time, optional date range parameters)
+        if (!start || !end) {
+          query = `
+            SELECT DATE_TRUNC('day', date) AS date,
+                AVG(amount) AS averageSale
+            FROM sales
+            WHERE user_id = $1
+            GROUP BY date
+            ORDER BY date
+            ;
+          `;
+          values = [userId];
+        }
+        else {
+          // else use the times given to produce an average within the stated bounds
+          query = `
+          SELECT DATE_TRUNC('day', date) AS date,
+          AVG(amount) AS averageSale
+          FROM sales
+          WHERE user_id = $1 AND date BETWEEN $2 AND $3
+          GROUP BY date
+          ORDER BY date          
+          ;
+        `;
+          values = [userId, start, end]; 
+        }    
+      
+        const result = await pool.query(query, values);
+        res.status(200).json(result.rows);
+        console.log('Quering all sales');
+      } catch (error) {
+        console.error('Error getting user revenue:', error);
+        res.status(500).json({ error: 'Database query failure' });
+      }
+    });
+
+    // return average sales monthly time series for a user 
+    app.get('/averageMonthlyRevenue/:id', async (req, res) => {
+      try {
+        // Get the optional user_id from the query string
+        const userId = parseInt(req.params.id, 10);
+        const { start, end } = req.query;
+        let query;
+        let values = [];
+
+        // return users average daily revenue time series (default is all time, optional date range parameters)
+        if (!start || !end) {
+          query = `
+            SELECT DATE_TRUNC('month', date) AS date,
+                AVG(amount) AS averageSale
+            FROM sales
+            WHERE user_id = $1
+            GROUP BY date
+            ORDER BY date
+            ;
+          `;
+          values = [userId];
+        }
+        else {
+          // else use the times given to produce an average within the stated bounds
+          query = `
+          SELECT DATE_TRUNC('month', date) AS date,
+          AVG(amount) AS averageSale
+          FROM sales
+          WHERE user_id = $1 AND date BETWEEN $2 AND $3
+          GROUP BY date
+          ORDER BY date          
+          ;
+        `;
+          values = [userId, start, end]; 
+        }    
+      
+        const result = await pool.query(query, values);
+        res.status(200).json(result.rows);
+        console.log('Quering all sales');
+      } catch (error) {
+        console.error('Error getting user revenue:', error);
+        res.status(500).json({ error: 'Database query failure' });
+      }
+    });
 
 
 
@@ -180,53 +250,52 @@ async function start() {
     }
   });
 
-  app.get('/timeseries', async (req, res) => {
-    try {
-      // Get the optional user_id from the query string
-      const userId = req.query.user_id;
-      let query;
-      let values = [];
+  // app.get('/timeseries', async (req, res) => {
+  //   try {
+  //     // Get the optional user_id from the query string
+  //     const userId = req.query.user_id;
+  //     let query;
+  //     let values = [];
     
-      if (userId) {
-        // Query for a specific user's sales aggregated by day (for example)
-        query = `
-          SELECT DATE_TRUNC('day', date) AS date,
-                 SUM(amount) AS totalSales,
-                 AVG(amount) AS averageSale
-          FROM sales
-          WHERE user_id = $1
-          GROUP BY date
-          ORDER BY date;
-        `;
-        values = [userId];
-      } else {
-        // Query for all users' sales aggregated by day
-        query = `
-          SELECT DATE_TRUNC('day', date) AS date,
-                 SUM(amount) AS totalSales,
-                 AVG(amount) AS averageSale
-          FROM sales
-          GROUP BY date
-          ORDER BY date;
-        `;
-      }
+  //     if (userId) {
+  //       // Query for a specific user's sales aggregated by day (for example)
+  //       query = `
+  //         SELECT DATE_TRUNC('day', date) AS date,
+  //                SUM(amount) AS totalSales,
+  //                AVG(amount) AS averageSale
+  //         FROM sales
+  //         WHERE user_id = $1
+  //         GROUP BY date
+  //         ORDER BY date;
+  //       `;
+  //       values = [userId];
+  //     } else {
+  //       // Query for all users' sales aggregated by day
+  //       query = `
+  //         SELECT DATE_TRUNC('day', date) AS date,
+  //                SUM(amount) AS totalSales,
+  //                AVG(amount) AS averageSale
+  //         FROM sales
+  //         GROUP BY date
+  //         ORDER BY date;
+  //       `;
+  //     }
     
-      const result = await pool.query(query, values);
-      res.status(200).json(result.rows);
+  //     const result = await pool.query(query, values);
+  //     res.status(200).json(result.rows);
 
-        // const result = await pool.query('SELECT DATE_TRUNC(\'Month\', date) AS date, SUM(amount) AS totalSales, AVG(amount) AS averageSale FROM sales GROUP BY date ORDER BY date;')
-        // res.status(200).json(result.rows);
-        // console.log('Quering all sales');
-    } catch (error) {
-      console.error('Error fetching time series data:', error);
-      res.status(500).json({ error: 'Database query failure' });
-    }
-  });
+  //       // const result = await pool.query('SELECT DATE_TRUNC(\'Month\', date) AS date, SUM(amount) AS totalSales, AVG(amount) AS averageSale FROM sales GROUP BY date ORDER BY date;')
+  //       // res.status(200).json(result.rows);
+  //       // console.log('Quering all sales');
+  //   } catch (error) {
+  //     console.error('Error fetching time series data:', error);
+  //     res.status(500).json({ error: 'Database query failure' });
+  //   }
+  // });
     
 
-  // Write your endpoints here
+  // Webinterface setup
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
   app.listen(PORT, HOST);
   console.log(`Server is running on http://${HOST}:${PORT}`);
 }

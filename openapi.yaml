@@ -123,6 +123,103 @@ paths:
         '404':
           description: Data not found
 
+  /averageDailyRevenue/{id}:
+    get:
+      summary: Get a user's average revenue for a specified date range or all time
+      description: >
+        Returns average revenue data for the specified user. If the query parameters
+        `start` and `end` (in YYYY-MM-DD format) are provided, the results are filtered
+        by that date range; otherwise, all time data is returned by day.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the user.
+        - in: query
+          name: start
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Start date in YYYY-MM-DD format.
+        - in: query
+          name: end
+          required: false
+          schema:
+            type: string
+            format: date
+          description: End date in YYYY-MM-DD format.
+      responses:
+        '200':
+          description: A list of average revenue data points by day
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                      example: "2021-08-06"
+                    averageRevenue:
+                      type: number
+                      format: float
+                      example: 1500.25
+        '404':
+          description: Data not found
+  /averageMonthlyRevenue/{id}:
+    get:
+      summary: Get a user's average revenue for a specified date range averaged monthly
+      description: >
+        Returns average revenue data for the specified user. If the query parameters
+        `start` and `end` (in YYYY-MM-DD format) are provided, the results are filtered
+        by that date range; otherwise, all time data is returned by day.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the user.
+        - in: query
+          name: start
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Start date in YYYY-MM-DD format.
+        - in: query
+          name: end
+          required: false
+          schema:
+            type: string
+            format: date
+          description: End date in YYYY-MM-DD format.
+      responses:
+        '200':
+          description: A list of average revenue data points by day
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                      example: "2021-08-06"
+                    averageRevenue:
+                      type: number
+                      format: float
+                      example: 1500.25
+        '404':
+          description: Data not found
+
   /averageTotal/{id}:
     get:
       summary: Get a user's total and average sales by date

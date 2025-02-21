@@ -2,10 +2,17 @@ openapi: 3.0.0
 info:
   title: Actifai Engineering Takehome API
   version: "1.0.0"
+  description: API for retrieving user and group sales data, including revenue calculations.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
 paths:
   /health:
     get:
       summary: Health check
+      description: Confirms the API is running.
       responses:
         '200':
           description: OK
@@ -13,11 +20,12 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: "Hello World!"
+                example: Hello World!
 
-  /allUserInfo:
+  /users/all:
     get:
       summary: Retrieve all users
+      description: Returns a list of all users in the system.
       responses:
         '200':
           description: List of user objects
@@ -33,17 +41,15 @@ paths:
                       example: 1
                     name:
                       type: string
-                      example: "Alice"
-                    email:
-                      type: string
-                      example: "alice@example.com"
+                      example: Alice
 
-  /userInfo/{id}:
+  /users/{id}:
     get:
       summary: Retrieve a user by ID
+      description: Returns details for a specific user.
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
           schema:
             type: integer
@@ -53,91 +59,84 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                      example: 1
-                    name:
-                      type: string
-                      example: "Alice"
-                    email:
-                      type: string
-                      example: "alice@example.com"
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: Alice
         '404':
           description: User not found
 
-  /averageUserRevenue/{id}:
+  /users/{id}/averageRevenue:
     get:
-      summary: Get a user's average revenue (all time or within a date range)
+      summary: Get a user's average revenue
+      description: Returns the average revenue for a user over a specified date range (or all-time if no date is specified).
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
           schema:
             type: integer
-          description: User ID.
-        - in: query
-          name: start
+        - name: start
+          in: query
           required: false
           schema:
             type: string
             format: date
-          description: Start date (YYYY-MM-DD).
-        - in: query
-          name: end
+          description: Start date in YYYY-MM-DD format.
+        - name: end
+          in: query
           required: false
           schema:
             type: string
             format: date
-          description: End date (YYYY-MM-DD).
+          description: End date in YYYY-MM-DD format.
       responses:
         '200':
-          description: User average revenue.
+          description: The user's average revenue
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    user_id:
-                      type: integer
-                      example: 11
-                    averageRevenue:
-                      type: number
-                      format: float
-                      example: 1500.25
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                    example: 11
+                  averageRevenue:
+                    type: number
+                    format: float
+                    example: 1500.25
 
-  /averageDailyRevenue/{id}:
+  /users/{id}/averageDailyRevenue:
     get:
-      summary: Get a user's average daily revenue (all time or date range)
+      summary: Get a user's average daily revenue
+      description: Returns a time series of the user's daily average revenue within a specified date range (or all-time).
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
           schema:
             type: integer
-          description: User ID.
-        - in: query
-          name: start
+        - name: start
+          in: query
           required: false
           schema:
             type: string
             format: date
-          description: Start date (YYYY-MM-DD).
-        - in: query
-          name: end
+          description: Start date in YYYY-MM-DD format.
+        - name: end
+          in: query
           required: false
           schema:
             type: string
             format: date
-          description: End date (YYYY-MM-DD).
+          description: End date in YYYY-MM-DD format.
       responses:
         '200':
-          description: User average daily revenue time series.
+          description: List of daily average revenue values
           content:
             application/json:
               schema:
@@ -154,33 +153,33 @@ paths:
                       format: float
                       example: 3341
 
-  /averageMonthlyRevenue/{id}:
+  /users/{id}/averageMonthlyRevenue:
     get:
-      summary: Get a user's average monthly revenue (all time or date range)
+      summary: Get a user's average monthly revenue
+      description: Returns a time series of the user's monthly average revenue within a specified date range (or all-time).
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
           schema:
             type: integer
-          description: User ID.
-        - in: query
-          name: start
+        - name: start
+          in: query
           required: false
           schema:
             type: string
             format: date
-          description: Start date (YYYY-MM-DD).
-        - in: query
-          name: end
+          description: Start date in YYYY-MM-DD format.
+        - name: end
+          in: query
           required: false
           schema:
             type: string
             format: date
-          description: End date (YYYY-MM-DD).
+          description: End date in YYYY-MM-DD format.
       responses:
         '200':
-          description: User average monthly revenue time series.
+          description: List of monthly average revenue values
           content:
             application/json:
               schema:
@@ -191,18 +190,19 @@ paths:
                     date:
                       type: string
                       format: date
-                      example: "2021-08-01"
+                      example: "2021-08"
                     averageSale:
                       type: number
                       format: float
-                      example: 3341
+                      example: 4000.75
 
-  /getallgroups:
+  /groups/all:
     get:
       summary: Retrieve all groups
+      description: Returns a list of all groups.
       responses:
         '200':
-          description: List of groups.
+          description: List of group objects
           content:
             application/json:
               schema:
@@ -217,104 +217,100 @@ paths:
                       type: string
                       example: "Sales Team"
 
-  /groupInfo/{id}:
+  /groups/{id}:
     get:
       summary: Retrieve a group by ID
+      description: Returns details for a specific group.
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
           schema:
             type: integer
-          description: Group ID.
       responses:
         '200':
-          description: A group object.
+          description: A group object
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                      example: 1
-                    name:
-                      type: string
-                      example: "Sales Team"
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: "Sales Team"
         '404':
           description: Group not found
 
-  /averageGroupRevenue/{id}:
+  /groups/{id}/averageRevenue:
     get:
-      summary: Get a group's average revenue (all time or date range)
+      summary: Get a group's average revenue
+      description: Returns the average revenue for a group over a specified date range (or all-time if not provided).
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
           schema:
             type: integer
-          description: Group ID.
-        - in: query
-          name: start
+        - name: start
+          in: query
           required: false
           schema:
             type: string
             format: date
-          description: Start date (YYYY-MM-DD).
-        - in: query
-          name: end
+          description: Start date in YYYY-MM-DD format.
+        - name: end
+          in: query
           required: false
           schema:
             type: string
             format: date
-          description: End date (YYYY-MM-DD).
+          description: End date in YYYY-MM-DD format.
       responses:
         '200':
-          description: Group average revenue.
+          description: The group's average revenue
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    group_id:
-                      type: integer
-                      example: 1
-                    averageGroupRevenue:
-                      type: number
-                      format: float
-                      example: 2500.5
+                type: object
+                properties:
+                  group_id:
+                    type: integer
+                    example: 2
+                  averageRevenue:
+                    type: number
+                    format: float
+                    example: 8000.50
 
-  /averageDailyGroupRevenue/{id}:
+  /groups/{id}/averageDailyRevenue:
     get:
-      summary: Get a group's average daily revenue (all time or date range)
+      summary: Get a user's average daily revenue
+      description: Returns a time series of the user's daily average revenue within a specified date range (or all-time).
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
           schema:
             type: integer
-          description: Group ID.
-        - in: query
-          name: start
+        - name: start
+          in: query
           required: false
           schema:
             type: string
             format: date
-          description: Start date (YYYY-MM-DD).
-        - in: query
-          name: end
+          description: Start date in YYYY-MM-DD format.
+        - name: end
+          in: query
           required: false
           schema:
             type: string
             format: date
-          description: End date (YYYY-MM-DD).
+          description: End date in YYYY-MM-DD format.
       responses:
         '200':
-          description: Group average daily revenue time series.
+          description: List of daily average revenue values
           content:
             application/json:
               schema:
@@ -331,33 +327,33 @@ paths:
                       format: float
                       example: 3341
 
-  /averageMonthlyGroupRevenue/{id}:
+  /groups/{id}/averageMonthlyRevenue:
     get:
-      summary: Get a group's average monthly revenue (all time or date range)
+      summary: Get a user's average monthly revenue
+      description: Returns a time series of the user's monthly average revenue within a specified date range (or all-time).
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
           schema:
             type: integer
-          description: Group ID.
-        - in: query
-          name: start
+        - name: start
+          in: query
           required: false
           schema:
             type: string
             format: date
-          description: Start date (YYYY-MM-DD).
-        - in: query
-          name: end
+          description: Start date in YYYY-MM-DD format.
+        - name: end
+          in: query
           required: false
           schema:
             type: string
             format: date
-          description: End date (YYYY-MM-DD).
+          description: End date in YYYY-MM-DD format.
       responses:
         '200':
-          description: Group average monthly revenue time series.
+          description: List of monthly average revenue values
           content:
             application/json:
               schema:
@@ -368,18 +364,19 @@ paths:
                     date:
                       type: string
                       format: date
-                      example: "2021-08-01"
+                      example: "2021-08"
                     averageSale:
                       type: number
                       format: float
-                      example: 3341
+                      example: 4000.75
 
-  /getallsales:
+  /sales/all:
     get:
       summary: Retrieve all sales records
+      description: Returns a list of all sales transactions.
       responses:
         '200':
-          description: List of sales records.
+          description: List of sales records
           content:
             application/json:
               schema:
@@ -401,3 +398,4 @@ paths:
                       type: string
                       format: date
                       example: "2021-08-06"
+

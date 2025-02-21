@@ -45,16 +45,15 @@ async function start() {
     res.send('Hello World!');
   });
 
-    // Write your endpoints here
+  // Write your endpoints here
 
   /****
    
     User based end points
   
   ****/
-
      // Retrieves all user records from the database and returns them as JSON
-     app.get('/allUserInfo', async (req, res) => {
+     app.get('/users/all', async (req, res) => {
       try {
         const result = await pool.query('SELECT * FROM users;')
         res.status(200).json(result.rows);
@@ -66,7 +65,7 @@ async function start() {
     });
 
     // Retrieves the details of a single user by ID (from the URL parameter) and returns the user data as JSON
-    app.get('/userInfo/:id', async (req, res) => {
+    app.get('/users/:id', async (req, res) => {
       try {
         const userId = parseInt(req.params.id, 10);
         const result = await pool.query('SELECT * FROM users WHERE id = $1;', [userId])
@@ -80,7 +79,7 @@ async function start() {
 
     // Calculates and returns the overall average revenue for the specified user.
     // If start and end query parameters are provided, the average is calculated for that date range.
-    app.get('/averageUserRevenue/:id', async (req, res) => {
+    app.get('/users/:id/averageRevenue', async (req, res) => {
       try {
         const userId = parseInt(req.params.id, 10);
         const { start, end } = req.query;
@@ -120,7 +119,7 @@ async function start() {
 
     // Retrieves a daily time series of the user's average sales
     // If start and end query parameters are provided, the average is calculated for that date range
-    app.get('/averageDailyRevenue/:id', async (req, res) => {
+    app.get('/users/:id/averageDailyRevenue', async (req, res) => {
       try {
         // Get the optional user_id from the query string
         const userId = parseInt(req.params.id, 10);
@@ -165,7 +164,7 @@ async function start() {
     });
 
     // return average sales monthly time series for a user 
-    app.get('/averageMonthlyRevenue/:id', async (req, res) => {
+    app.get('/users/:id/averageMonthlyRevenue', async (req, res) => {
       try {
         // Get the optional user_id from the query string
         const userId = parseInt(req.params.id, 10);
@@ -219,7 +218,7 @@ async function start() {
 
   // Calculates and returns the overall average revenue for a specified group.
   // If 'start' and 'end' query parameters are provided, calculates the average revenue for that date range.
-  app.get('/getallgroups', async (req, res) => {
+  app.get('/groups/all', async (req, res) => {
     try {
       const result = await pool.query('SELECT * FROM groups;')
       res.status(200).json(result.rows);
@@ -231,7 +230,7 @@ async function start() {
   });
 
   // Retrieves the details of a specific group by ID and returns the group data
-  app.get('/groupInfo/:id', async (req, res) => {
+  app.get('/groups/:id', async (req, res) => {
     try {
       const groupId = parseInt(req.params.id, 10);
       const result = await pool.query('SELECT * FROM groups WHERE id = $1;', [userId])
@@ -245,7 +244,7 @@ async function start() {
 
   // Retrieves a group's average revenue,
   // optionally filtered by the provided 'start' and 'end' query parameters.
-  app.get('/averageGroupRevenue/:id', async (req, res) => {
+  app.get('/groups/:id/averageRevenue', async (req, res) => {
     try {
       const userId = parseInt(req.params.id, 10);
       const { start, end } = req.query;
@@ -287,7 +286,7 @@ async function start() {
 
   // Retrieves a daily time series of the group's average revenue,
   // optionally filtered by a provided date range
-  app.get('/averageDailyGroupRevenue/:id', async (req, res) => {
+  app.get('/groups/:id/averageDailyRevenue', async (req, res) => {
     try {
       // Get the optional user_id from the query string
       const userId = parseInt(req.params.id, 10);
@@ -335,7 +334,7 @@ async function start() {
 
   // Retrieves a monthly time series of the group's average revenue,
   // optionally filtered by the provided 'start' and 'end' query parameters.
-  app.get('/averageMonthlyGroupRevenue/:id', async (req, res) => {
+  app.get('/groups/:id/averageMonthlyRevenue', async (req, res) => {
     try {
       // Get the optional user_id from the query string
       const userId = parseInt(req.params.id, 10);
@@ -382,7 +381,7 @@ async function start() {
   });  
 
   // Retrieves all sales records from the database and returns them as JSON
-  app.get('/getallsales', async (req, res) => {
+  app.get('/sales/all', async (req, res) => {
     try {
       const result = await pool.query('SELECT * FROM sales;')
       res.status(200).json(result.rows);
